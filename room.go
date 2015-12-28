@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	"github.com/rhtps/s2i-workshop/gochat/trace"
+	"github.com/rhtps/gochat/trace"
 	"github.com/stretchr/objx"
 )
 
