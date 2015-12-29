@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/gomniauth/providers/github"
 	"github.com/stretchr/gomniauth/providers/google"
 	"github.com/stretchr/objx"
+	"os"
 ) 
 
 type templateHandler struct {
@@ -22,8 +23,13 @@ type templateHandler struct {
 
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	if templatePath := os.Getenv("TEMPLATE_PATH"); templatePath == "" {
+		templatePath = "templates"
+	}
+
+
 	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
+		t.templ = template.Must(template.ParseFiles(filepath.Join(os.Getenv("TEMPLATE_PATH"), t.filename)))
 	})
 	data := map[string]interface{}{
 		"Host": r.Host,
@@ -41,11 +47,11 @@ func main() {
 	flag.Parse()
 	
 	//set up gomniauth
-	gomniauth.SetSecurityKey("e19c1283c925b3206685ff522acfe3e6")
+	gomniauth.SetSecurityKey(os.Getenv("SECURITY_KEY"))
 	gomniauth.WithProviders(
-		facebook.New("key", "secret", "http://localhost:8080/auth/callback/facebook"),
-		github.New("bae0d1c04aa6c419d169", "1724f952f0ea09131468188197dd5558680ce14d", "http://localhost:8080/auth/callback/github"),
-		google.New("key", "secret", "http://localhost:8080/auth/callback/google"),
+		facebook.New(os.Getenv("FACEBOOK_PROVIDER_KEY"), os.Getenv("FACEBOOK_PROVIDER_SECRET_KEY"), "http://localhost:8080/auth/callback/facebook"),
+		github.New(os.Getenv("GITHUB_PROVIDER_KEY"), os.Getenv("GITHUB_PROVIDER_SECRET_KEY"), "http://localhost:8080/auth/callback/github"),
+		google.New(os.Getenv("GOOGLE_PROVIDER_KEY"), os.Getenv("GOOGLE_PROVIDER_SECRET_KEY"), "http://localhost:8080/auth/callback/google"),
 		)
 	
 	r := newRoom()
