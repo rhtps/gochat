@@ -46,6 +46,10 @@ func main() {
 	var addr = flag.String("addr", ":8080", "The addr of the application.")
 	flag.Parse()
 	
+	hostCallback := os.Getenv("HOST_CALLBACK"); hostCallback == "" {
+		hostCallback = "localhost"
+	}	
+
 	//set up gomniauth
 	gomniauth.SetSecurityKey(os.Getenv("SECURITY_KEY"))
 	gomniauth.WithProviders(
