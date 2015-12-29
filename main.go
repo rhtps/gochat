@@ -23,11 +23,6 @@ type templateHandler struct {
 
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	if templatePath := os.Getenv("TEMPLATE_PATH"); templatePath == "" {
-		templatePath = "templates"
-	}
-
-
 	t.once.Do(func() {
 		t.templ = template.Must(template.ParseFiles(filepath.Join(os.Getenv("TEMPLATE_PATH"), t.filename)))
 	})
@@ -46,16 +41,12 @@ func main() {
 	var addr = flag.String("addr", ":8080", "The addr of the application.")
 	flag.Parse()
 	
-	hostCallback := os.Getenv("HOST_CALLBACK"); hostCallback == "" {
-		hostCallback = "localhost"
-	}	
-
 	//set up gomniauth
 	gomniauth.SetSecurityKey(os.Getenv("SECURITY_KEY"))
 	gomniauth.WithProviders(
-		facebook.New(os.Getenv("FACEBOOK_PROVIDER_KEY"), os.Getenv("FACEBOOK_PROVIDER_SECRET_KEY"), "http://localhost:8080/auth/callback/facebook"),
-		github.New(os.Getenv("GITHUB_PROVIDER_KEY"), os.Getenv("GITHUB_PROVIDER_SECRET_KEY"), "http://localhost:8080/auth/callback/github"),
-		google.New(os.Getenv("GOOGLE_PROVIDER_KEY"), os.Getenv("GOOGLE_PROVIDER_SECRET_KEY"), "http://localhost:8080/auth/callback/google"),
+		facebook.New(os.Getenv("FACEBOOK_PROVIDER_KEY"), os.Getenv("FACEBOOK_PROVIDER_SECRET_KEY"), "http://"+os.Getenv("HOST_CALLBACK")+":8080/auth/callback/facebook"),
+		github.New(os.Getenv("GITHUB_PROVIDER_KEY"), os.Getenv("GITHUB_PROVIDER_SECRET_KEY"), "http://"+os.Getenv("HOST_CALLBACK")+":8080/auth/callback/github"),
+		google.New(os.Getenv("GOOGLE_PROVIDER_KEY"), os.Getenv("GOOGLE_PROVIDER_SECRET_KEY"), "http://"+os.Getenv("HOST_CALLBACK")+":8080/auth/callback/google"),
 		)
 	
 	r := newRoom()
