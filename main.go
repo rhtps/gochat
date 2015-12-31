@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/gomniauth/providers/github"
 	"github.com/stretchr/gomniauth/providers/google"
 	"github.com/stretchr/objx"
+	"os"
 ) 
 var avatars Avatar = TryAvatars{
 	UseFileSystemAvatar,
@@ -24,6 +25,7 @@ type templateHandler struct {
 }
 
 var templatePath *string
+var AvatarPath *string
 
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.once.Do(func() {
@@ -44,7 +46,7 @@ func main() {
 	var host = flag.String("host", ":8080", "The host address of the application.")
 	var callBackHost = flag.String("callBackHost", "localhost:8080", "The host address of the application.")
 	templatePath = flag.String("templatePath", "templates/", "The path to the HTML templates.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
-	var avatarPath = flag.String("avatarPath", "./avatars", "The path to store user uploaded avatars.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
+	AvatarPath = flag.String("avatarPath", "./avatars", "The path to store user uploaded avatars.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
 	var omniSecurityKey = flag.String("securityKey", "12345", "The OAuth security key.")
 	var facebookProviderKey = flag.String("facebookProviderKey", "12345", "The FaceBook OAuth provider key.")
 	var facebookProviderSecretKey = flag.String("facebookProviderSecretKey", "12345", "The FaceBook OAuth provider secret key.")
@@ -54,6 +56,10 @@ func main() {
         var googleProviderSecretKey = flag.String("googleProviderSecretKey", "12345", "The Google OAuth provider secret key.")
 	flag.Parse()
 	
+	if _, err := os.Stat(*AvatarPath); os.IsNotExist(err) {
+  	// path/to/whatever does not exist
+		os.MkdirAll(*AvatarPath, 0777)
+	}
 	
 	//set up gomniauth
 	gomniauth.SetSecurityKey(*omniSecurityKey)
@@ -81,7 +87,7 @@ func main() {
 	})
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	http.HandleFunc("/uploader", uploadHandler)
-	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir(*avatarPath))))
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir(*AvatarPath))))
 	go r.run()
 	log.Println("Starting the web server on", *host)
 	if err := http.ListenAndServe(*host, nil); err != nil {
