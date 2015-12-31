@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/gomniauth/providers/github"
 	"github.com/stretchr/gomniauth/providers/google"
 	"github.com/stretchr/objx"
-	"os"
 ) 
 var avatars Avatar = TryAvatars{
 	UseFileSystemAvatar,
@@ -24,10 +23,11 @@ type templateHandler struct {
 	templ    *template.Template
 }
 
-func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+var templatePath *string
 
+func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join(os.Getenv("TEMPLATE_PATH"), t.filename)))
+		t.templ = template.Must(template.ParseFiles(filepath.Join(*templatePath, t.filename)))
 	})
 	data := map[string]interface{}{
 		"Host": r.Host,
@@ -41,15 +41,26 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	var addr = flag.String("addr", ":8080", "The addr of the application.")
+	var host = flag.String("host", ":8080", "The host address of the application.")
+	var callBackHost = flag.String("callBackHost", "localhost:8080", "The host address of the application.")
+	templatePath = flag.String("templatePath", "templates/", "The path to the HTML templates.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
+	var avatarPath = flag.String("avatarPath", "./avatars", "The path to store user uploaded avatars.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
+	var omniSecurityKey = flag.String("securityKey", "12345", "The OAuth security key.")
+	var facebookProviderKey = flag.String("facebookProviderKey", "12345", "The FaceBook OAuth provider key.")
+	var facebookProviderSecretKey = flag.String("facebookProviderSecretKey", "12345", "The FaceBook OAuth provider secret key.")
+	var githubProviderKey = flag.String("githubProviderKey", "12345", "The GitHub OAuth provider key.")
+        var githubProviderSecretKey = flag.String("githubProviderSecretKey", "12345", "The GitHub OAuth provider secret key.")
+	var googleProviderKey = flag.String("googleProviderKey", "12345", "The Google OAuth provider key.")
+        var googleProviderSecretKey = flag.String("googleProviderSecretKey", "12345", "The Google OAuth provider secret key.")
 	flag.Parse()
 	
+	
 	//set up gomniauth
-	gomniauth.SetSecurityKey(os.Getenv("SECURITY_KEY"))
+	gomniauth.SetSecurityKey(*omniSecurityKey)
 	gomniauth.WithProviders(
-		facebook.New(os.Getenv("FACEBOOK_PROVIDER_KEY"), os.Getenv("FACEBOOK_PROVIDER_SECRET_KEY"), "http://"+os.Getenv("HOST_CALLBACK")+":8080/auth/callback/facebook"),
-		github.New(os.Getenv("GITHUB_PROVIDER_KEY"), os.Getenv("GITHUB_PROVIDER_SECRET_KEY"), "http://"+os.Getenv("HOST_CALLBACK")+":8080/auth/callback/github"),
-		google.New(os.Getenv("GOOGLE_PROVIDER_KEY"), os.Getenv("GOOGLE_PROVIDER_SECRET_KEY"), "http://"+os.Getenv("HOST_CALLBACK")+":8080/auth/callback/google"),
+		facebook.New(*facebookProviderKey, *facebookProviderSecretKey, "http://"+*callBackHost+"/auth/callback/facebook"),
+		github.New(*githubProviderKey, *githubProviderSecretKey, "http://"+*callBackHost+"/auth/callback/github"),
+		google.New(*googleProviderKey, *googleProviderSecretKey, "http://"+*callBackHost+"/auth/callback/google"),
 		)
 	
 	r := newRoom()
@@ -70,10 +81,10 @@ func main() {
 	})
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	http.HandleFunc("/uploader", uploadHandler)
-	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir(*avatarPath))))
 	go r.run()
-	log.Println("Starting the web server on", *addr)
-	if err := http.ListenAndServe(*addr, nil); err != nil {
+	log.Println("Starting the web server on", *host)
+	if err := http.ListenAndServe(*host, nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 
