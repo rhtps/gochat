@@ -14,11 +14,14 @@ var UseAuthAvatar AuthAvatar
 var UseFileSystemAvatar FileSystemAvatar
 
 func (_ AuthAvatar) GetAvatarURL(u ChatUser) (string, error) {
+	
+	
 	url := u.AvatarURL()
 	if len(url) > 0 {
 		return url, nil
 	}
-	return "", ErrNoAvatarURL
+	
+	return "./avatars/default.jpg", nil
 }
 
 func (_ FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
@@ -28,11 +31,11 @@ func (_ FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
 				continue
 			}
 			if match, _ := path.Match(u.UniqueID()+"*", file.Name()); match {
-				return "/avatars/" + file.Name(), nil
+				return "./avatars/" + file.Name(), nil
 			}
 		}
 	}
-	return "", ErrNoAvatarURL
+	return "./avatars/default.jpg", ErrNoAvatarURL
 }
 
 type Avatar interface {
