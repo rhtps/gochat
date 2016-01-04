@@ -25,6 +25,7 @@ type templateHandler struct {
 }
 
 var templatePath *string
+var AvatarPath *string
 
 
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +48,7 @@ func main() {
 	var host = flag.String("host", ":8080", "The host address of the application.")
 	var callBackHost = flag.String("callBackHost", "localhost:8080", "The host address of the application.")
 	templatePath = flag.String("templatePath", "templates/", "The path to the HTML templates.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
+	AvatarPath = flag.String("templatePath", "./avatars", "The path to the folder for the avatar images  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
 	var omniSecurityKey = flag.String("securityKey", "12345", "The OAuth security key.")
 	var facebookProviderKey = flag.String("facebookProviderKey", "12345", "The FaceBook OAuth provider key.")
 	var facebookProviderSecretKey = flag.String("facebookProviderSecretKey", "12345", "The FaceBook OAuth provider secret key.")
@@ -82,7 +84,7 @@ func main() {
 	})
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	http.HandleFunc("/uploader", uploadHandler)
-	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir(*AvatarPath))))
 	
 	authenticator := auth.NewBasicAuthenticator("example.com", Secret)
 	http.HandleFunc("/authbasic", authenticator.Wrap(handleAuthBasic))

@@ -21,21 +21,21 @@ func (_ AuthAvatar) GetAvatarURL(u ChatUser) (string, error) {
 		return url, nil
 	}
 	
-	return "./avatars/default.jpg", nil
+	return *AvatarPath+"default.jpg", nil
 }
 
 func (_ FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
-	if files, err := ioutil.ReadDir("avatars"); err == nil {
+	if files, err := ioutil.ReadDir(*AvatarPath); err == nil {
 		for _, file := range files {
 			if file.IsDir() {
 				continue
 			}
 			if match, _ := path.Match(u.UniqueID()+"*", file.Name()); match {
-				return "./avatars/" + file.Name(), nil
+				return *AvatarPath + file.Name(), nil
 			}
 		}
 	}
-	return "./avatars/default.jpg", ErrNoAvatarURL
+	return *AvatarPath+"default.jpg", ErrNoAvatarURL
 }
 
 type Avatar interface {

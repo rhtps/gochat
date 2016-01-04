@@ -22,7 +22,7 @@ func TestAuthAvatar(t *testing.T) {
 }
 
 func TestFileSystemAvatar(t *testing.T) {
-	filename := path.Join("avatars", "abc.jpg")
+	filename := path.Join(*AvatarPath, "abc.jpg")
 	ioutil.WriteFile(filename, []byte{}, 0777)
 	defer func() { os.Remove(filename) }()
 
@@ -33,7 +33,7 @@ func TestFileSystemAvatar(t *testing.T) {
 	if err != nil {
 		t.Error("FileSystemAvatar.GetAvatarURL should not return an error")
 	}
-	if url != "/avatars/abc.jpg" {
+	if url != *AvatarPath+"abc.jpg" {
 		t.Errorf("FileSystemAvatar.GetAvatarURL wrongly returned %s", url)
 	}
 }
