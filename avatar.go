@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -39,8 +40,10 @@ var UseFileSystemAvatar FileSystemAvatar
 func (FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
 	files, err := ioutil.ReadDir(*AvatarPath)
 	if err != nil {
+		fmt.Printf("Error reading avatar path %s", *AvatarPath)
 		return "", ErrNoAvatarURL
 	}
+
 	for _, file := range files {
 		if file.IsDir() {
 			continue
@@ -49,7 +52,7 @@ func (FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
 			return *AvatarPath + fname, nil
 		}
 	}
-	return "", ErrNoAvatarURL
+	return *AvatarPath + "default.jpg", nil
 }
 
 type AuthAvatar struct{}

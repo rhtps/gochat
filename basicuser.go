@@ -3,22 +3,19 @@ package main
 import (
 	"github.com/stretchr/gomniauth/common"
 	"github.com/stretchr/objx"
-
 )
 
 type User struct {
-	name string
+	name      string
 	avatarUrl string
 }
 
-
 func NewBasicUser(name string, avatarUrl string) *User {
-	
-	user := &User{name, avatarUrl}
-	
-	return user;
-}
 
+	user := &User{name, avatarUrl}
+
+	return user
+}
 
 // Email gets the users email address.
 func (u *User) Email() string {
@@ -50,7 +47,7 @@ func (u *User) ProviderCredentials() map[string]*common.Credentials {
 // IDForProvider gets the ID value for the specified provider name for
 // this user from the ProviderCredentials data.
 func (u *User) IDForProvider(provider string) string {
-	
+
 	return ""
 }
 
@@ -63,6 +60,3 @@ func (u *User) AuthCode() string {
 func (u *User) Data() objx.Map {
 	return nil
 }
-
-
-

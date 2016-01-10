@@ -1,9 +1,9 @@
 package main
 
 import (
+	"io"
 	"io/ioutil"
 	"net/http"
-	"io"
 	"path"
 )
 
@@ -26,6 +26,5 @@ func uploadHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	io.WriteString(w, "Successful")
-
 
 }

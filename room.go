@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gorilla/websocket"
-	"log"
-	"net/http"
 	"github.com/rhtps/gochat/trace"
 	"github.com/stretchr/objx"
+	"log"
+	"net/http"
 )
 
 type room struct {
@@ -13,7 +13,7 @@ type room struct {
 	join    chan *client
 	leave   chan *client
 	clients map[*client]bool
-	tracer trace.Tracer
+	tracer  trace.Tracer
 }
 
 func newRoom() *room {
@@ -70,11 +70,11 @@ func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log.Fatal("Failed to get auth cookie:", err)
 		return
 	}
-	
+
 	client := &client{
-		socket: socket,
-		send:   make(chan *message, messageBufferSize),
-		room:   r,
+		socket:   socket,
+		send:     make(chan *message, messageBufferSize),
+		room:     r,
 		userData: objx.MustFromBase64(authCookie.Value),
 	}
 

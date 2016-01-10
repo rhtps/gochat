@@ -1,12 +1,13 @@
 package main
+
 import (
-		"testing"
-		"os"
-		"io/ioutil"
-		"path"
-		"flag"
-		gomniauthtest "github.com/stretchr/gomniauth/test"
-		)
+	"flag"
+	gomniauthtest "github.com/stretchr/gomniauth/test"
+	"io/ioutil"
+	"os"
+	"path"
+	"testing"
+)
 
 func TestAuthAvatar(t *testing.T) {
 
@@ -42,7 +43,7 @@ func TestFileSystemAvatar(t *testing.T) {
 	var fileSystemAvatar FileSystemAvatar
 	user := &chatUser{uniqueID: "abc"}
 	url, err := fileSystemAvatar.GetAvatarURL(user)
-	
+
 	if err != nil {
 		t.Error("FileSystemAvatar.GetAvatarURL should not return an error")
 	}
@@ -54,6 +55,6 @@ func TestFileSystemAvatar(t *testing.T) {
 func TestMain(m *testing.M) {
 	flag.Parse()
 	AvatarPath = flag.String("avatarPath", "avatars/", "The path to the folder for the avatar images  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
-	
+
 	os.Exit(m.Run())
 }

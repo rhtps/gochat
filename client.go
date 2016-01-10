@@ -3,13 +3,12 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"time"
-	
 )
 
 type client struct {
-	socket *websocket.Conn
-	send   chan *message
-	room   *room
+	socket   *websocket.Conn
+	send     chan *message
+	room     *room
 	userData map[string]interface{}
 }
 
