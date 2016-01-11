@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 )
@@ -28,7 +29,9 @@ type templateHandler struct {
 
 var templatePath *string
 var AvatarPath *string
+var HtpasswdPath *string
 
+//Primary handler
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.once.Do(func() {
 		t.templ = template.Must(template.ParseFiles(filepath.Join(*templatePath, t.filename)))
@@ -44,11 +47,19 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/*Main entry point.  Flags, Handlers, and authentication providers configured here.
+*
+* Basic usage: gochat -host=0.0.0.0:8080
+*
+* Help: gochat --help
+*
+ */
 func main() {
 	var host = flag.String("host", ":8080", "The host address of the application.")
-	var callBackHost = flag.String("callBackHost", "localhost:8080", "The host address of the application.")
+	var callBackHost = flag.String("callBackHost", "http://localhost:8080", "The host address of the application.")
 	templatePath = flag.String("templatePath", "templates/", "The path to the HTML templates.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
-	AvatarPath = flag.String("avatarPath", "avatars/", "The path to the folder for the avatar images  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
+	AvatarPath = flag.String("avatarPath", "avatars/", "The path to the folder for the avatar images.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.")
+	HtpasswdPath = flag.String("htpasswdPath", os.Getenv("CHAT_PASSWORD_FILE"), "The path to the htpasswd file for basic auth.  This is relative to the location from which \"gochat\" is executed.  Can be absolute.  By default, this is set to the CHAT_PASSWORD_FILE environment variable.")
 	var omniSecurityKey = flag.String("securityKey", "12345", "The OAuth security key.")
 	var facebookProviderKey = flag.String("facebookProviderKey", "12345", "The FaceBook OAuth provider key.")
 	var facebookProviderSecretKey = flag.String("facebookProviderSecretKey", "12345", "The FaceBook OAuth provider secret key.")
@@ -61,9 +72,9 @@ func main() {
 	//set up gomniauth
 	gomniauth.SetSecurityKey(*omniSecurityKey)
 	gomniauth.WithProviders(
-		facebook.New(*facebookProviderKey, *facebookProviderSecretKey, "http://"+*callBackHost+"/auth/callback/facebook"),
-		github.New(*githubProviderKey, *githubProviderSecretKey, "http://"+*callBackHost+"/auth/callback/github"),
-		google.New(*googleProviderKey, *googleProviderSecretKey, "http://"+*callBackHost+"/auth/callback/google"),
+		facebook.New(*facebookProviderKey, *facebookProviderSecretKey, *callBackHost+"/auth/callback/facebook"),
+		github.New(*githubProviderKey, *githubProviderSecretKey, *callBackHost+"/auth/callback/github"),
+		google.New(*googleProviderKey, *googleProviderSecretKey, *callBackHost+"/auth/callback/google"),
 	)
 
 	r := newRoom()
@@ -79,15 +90,21 @@ func main() {
 			Path:   "/",
 			MaxAge: -1,
 		})
-		w.Header()["Location"] = []string{"/string"}
+		w.Header()["Location"] = []string{"/chat"}
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	})
 	http.Handle("/upload", &templateHandler{filename: "upload.html"})
 	http.HandleFunc("/uploader", uploadHandler)
 	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir(*AvatarPath))))
 
-	authenticator := auth.NewBasicAuthenticator("example.com", Secret)
-	http.HandleFunc("/authbasic", authenticator.Wrap(handleAuthBasic))
+	if len(*HtpasswdPath) > 0 {
+		secret := auth.HtpasswdFileProvider(*HtpasswdPath)
+		authenticator := auth.NewBasicAuthenticator("gochat", secret)
+		http.HandleFunc("/authbasic", authenticator.Wrap(handleAuthBasic))
+	} else {
+		authenticator := auth.NewBasicAuthenticator("gochat", Secret)
+		http.HandleFunc("/authbasic", authenticator.Wrap(handleAuthBasic))
+	}
 
 	go r.run()
 	log.Println("Starting the web server on", *host)
