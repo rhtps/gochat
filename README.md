@@ -1,8 +1,40 @@
 github.com/rhtps/gochat/
 # gochat
-An awesome chat client written in Go.  This is an example from Go Programming Blueprints" by Mat Ryer.
+A nifty chat client written in Go.
+
+## Usage
+### Building
+```
+go get gitub.com/rhtps/gochat
+cd $GOPATH/src/github.com/rhtps/gochat
+go build
+```
+### Help
+```
+./gochat --help
+Usage of ./gochat:
+  -avatarPath="avatars/": The path to the folder for the avatar images  This is relative to the location from which "gochat" is executed.  Can be absolute.
+  -callBackHost="localhost:8080": The host address of the application.
+  -facebookProviderKey="12345": The FaceBook OAuth provider key.
+  -facebookProviderSecretKey="12345": The FaceBook OAuth provider secret key.
+  -githubProviderKey="12345": The GitHub OAuth provider key.
+  -githubProviderSecretKey="12345": The GitHub OAuth provider secret key.
+  -googleProviderKey="12345": The Google OAuth provider key.
+  -googleProviderSecretKey="12345": The Google OAuth provider secret key.
+  -host=":8080": The host address of the application.
+  -securityKey="12345": The OAuth security key.
+  -templatePath="templates/": The path to the HTML templates.  This is relative to the location from which "gochat" is executed.  Can be absolute.
+```
+
+### Basic Execution
+To execute, binding to any interface on the host, execute:
+```
+./gochat -host=0.0.0.0:8080
+```
+
 ## Resources
 "gochat" is based on an example from [Go Programming Blueprints](https://github.com/matryer/goblueprints) by Mat Ryer
+
 ["go-http-auth"](https://github.com/abbot/go-http-auth) provides the basic authentication
 ## License
 Copyright (c) 2015 Kenneth D. Evensen
