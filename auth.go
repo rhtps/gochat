@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var UseOmniAuth bool
+
 type ChatUser interface {
 	UniqueID() string
 	AvatarURL() string
@@ -74,6 +76,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatalln("Error when trying to get user from", provider, "-", err)
 		}
 		chatUser := &chatUser{User: user}
+		UseOmniAuth = true
 		m := md5.New()
 		io.WriteString(m, strings.ToLower(user.Name()))
 		chatUser.uniqueID = fmt.Sprintf("%x", m.Sum(nil))

@@ -28,3 +28,23 @@ func uploadHandler(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "Successful")
 
 }
+
+func uploadHtpasswdHandler(w http.ResponseWriter, req *http.Request) {
+	file, _, err := req.FormFile("htpasswdFile")
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+	err = ioutil.WriteFile(*HtpasswdPath, data, 0777)
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+	io.WriteString(w, "Successful")
+
+}

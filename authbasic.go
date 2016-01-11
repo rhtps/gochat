@@ -5,11 +5,20 @@ import (
 	"fmt"
 	auth "github.com/abbot/go-http-auth"
 	"github.com/stretchr/objx"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
+	"sync"
 )
+
+type templateHandlerBasicAuth struct {
+	once     sync.Once
+	filename string
+	templ    *template.Template
+}
 
 func Secret(user, realm string) string {
 	if len(user) >= 4 {
@@ -19,8 +28,20 @@ func Secret(user, realm string) string {
 	return ""
 }
 
-func handleAuthBasic(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
+func (t *templateHandlerBasicAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	t.once.Do(func() {
+		t.templ = template.Must(template.ParseFiles(filepath.Join(*templatePath, t.filename)))
+	})
+	data := map[string]interface{}{
+		"Host": r.Host,
+	}
+	w.WriteHeader(http.StatusUnauthorized)
+	t.templ.Execute(w, data)
 
+}
+
+func handleAuthBasic(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
+	UseOmniAuth = false
 	user := NewBasicUser(r.Username, "12345")
 	chatUser := &chatUser{User: user}
 
@@ -44,5 +65,4 @@ func handleAuthBasic(w http.ResponseWriter, r *auth.AuthenticatedRequest) {
 
 	w.Header()["Location"] = []string{"/chat"}
 	w.WriteHeader(http.StatusTemporaryRedirect)
-
 }

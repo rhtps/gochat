@@ -52,7 +52,10 @@ func (FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
 			return *AvatarPath + fname, nil
 		}
 	}
-	return *AvatarPath + "default.jpg", nil
+	if UseOmniAuth == false {
+		return *AvatarPath + "default.jpg", nil
+	}
+	return "", ErrNoAvatarURL
 }
 
 type AuthAvatar struct{}
