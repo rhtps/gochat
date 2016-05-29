@@ -4,4 +4,3 @@ gochat
 goexec
 htpasswd
 avatars/*.png
-vendor/
