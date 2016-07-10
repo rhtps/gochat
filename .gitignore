@@ -3,3 +3,4 @@ chat
 gochat
 goexec
 avatars/*.png
+vendor/
