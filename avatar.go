@@ -2,10 +2,11 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 // ErrNoAvatar is the error that is returned when the
@@ -38,9 +39,10 @@ type FileSystemAvatar struct{}
 var UseFileSystemAvatar FileSystemAvatar
 
 func (FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
+	glog.Infof("Attempting to read avatar path %s", *AvatarPath)
 	files, err := ioutil.ReadDir(*AvatarPath)
 	if err != nil {
-		fmt.Printf("Error reading avatar path %s", *AvatarPath)
+		glog.Fatalf("Error reading avatar path %s", *AvatarPath)
 		return "", ErrNoAvatarURL
 	}
 
@@ -49,11 +51,11 @@ func (FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
 			continue
 		}
 		if fname := file.Name(); u.UniqueID() == strings.TrimSuffix(fname, filepath.Ext(fname)) {
-			return *AvatarPath + fname, nil
+			return "avatars/" + fname, nil
 		}
 	}
 	if UseOmniAuth == false {
-		return *AvatarPath + "default.jpg", nil
+		return "avatars/default.jpg", nil
 	}
 	return "", ErrNoAvatarURL
 }
